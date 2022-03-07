@@ -1,0 +1,47 @@
+#Hist Config
+# TH1 name
+TH1	hlupodgtz0
+TH1	hlupodgtz1
+TH1	hlupodgtz2
+TH1	hlupodgtz3
+TH1	hlupodgtz4
+TH1	hlupodgtz5
+TH1	hlupodgtz6
+TH1	hlupodgtz7
+#rate cal
+TH1	hrate
+TH1	hratetmp
+TH1	hratetmpscale
+
+# TH2 name
+
+
+
+
+# Default histogram in canvas 1
+# CANVAS1 name
+CANVAS1	hlupodgtz0
+CANVAS1	hlupodgtz1
+CANVAS1	hlupodgtz2
+CANVAS1	hlupodgtz3
+CANVAS1	hlupodgtz4
+CANVAS1	hlupodgtz5
+CANVAS1	hlupodgtz6
+CANVAS1	hlupodgtz7
+# Default histogram in canvas 2
+CANVAS2 hrate
+
+# Name in list box
+LISTBOX	hlupodgtz0
+LISTBOX	hlupodgtz1
+LISTBOX	hlupodgtz2
+LISTBOX	hlupodgtz3
+LISTBOX	hlupodgtz4
+LISTBOX	hlupodgtz5
+LISTBOX	hlupodgtz6
+LISTBOX	hlupodgtz7
+
+# Rate meter histogram name (must be one of the TH1 name)
+RATE hrate
+RATECAL hratetmp
+RATECALTOSCALE hratetmpscale

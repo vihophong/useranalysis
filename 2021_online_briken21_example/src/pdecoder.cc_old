@@ -1,0 +1,214 @@
+
+/* ************************ DO NOT REMOVE  ****************************** */
+#include <iostream>
+#include <pmonitor/pmonitor.h>
+#include <TSystem.h>
+#include <TROOT.h>
+#include "pdecoder.h"
+#include <dpp.h>
+#include <libDataStruct.h>
+//#include <DataStruct_dict.C>
+
+
+
+#define V1730_EVENT_TYPE 1
+
+#define V1730_HDR 6
+#define V1730_N_CH 8
+#define V1730_MAX_N_CH 8
+#define V1730_PACKET 52
+#define NSBL 8
+// 5000000 - 15 % memory = 1.2 Gb
+
+/* ********************************************************************** */
+
+#include <TH1.h>
+#include <TH2.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TString.h>
+#include <vector>
+#include <map>
+#include <TCanvas.h>
+
+#define N_REFESH_WF 1000
+#define N_MAX_WF_LENGTH 500
+
+using namespace std;
+
+//! histograms and trees
+TH2F *ht2d;
+TH2F *he2d;
+
+TH1F *hwf1d[V1730_N_CH];
+TH2F *hwf2d[V1730_N_CH];
+
+TH1F* h_rtclocktw;
+
+
+void Init(){
+    h_rtclocktw=new TH1F("h_rtclocktw","h_rtclocktw",200,0,2000);
+    ht2d = new TH2F("t2d","Time Spectra 2D",V1730_N_CH,0,V1730_N_CH,550,0,550);
+    he2d = new TH2F("e2d","Energy Spectra 2D",V1730_N_CH,0,V1730_N_CH,2000,0,2000);
+    for (int i=0;i<V1730_N_CH;i++){
+        hwf1d[i] = new TH1F (Form("wf1730_1d_%d",i),Form("Waveform 1d v1730 %d",i), N_MAX_WF_LENGTH, 0,N_MAX_WF_LENGTH );
+        hwf2d[i] = new TH2F (Form("wf1730_2d_%d",i),Form("Waveform 2d v1730 %d",i), N_MAX_WF_LENGTH, 0,N_MAX_WF_LENGTH, 1700, 0,17000 );
+    }
+}
+
+void ProcessEvent(NIGIRIHit* data){
+    if (data->evt_type == V1730_EVENT_TYPE){
+        int ch  = data->ch;
+        int itcnt=0;
+        if (data->clong>0){
+            he2d->Fill(ch,data->clong);
+            ht2d->Fill(ch,data->finets);
+        }
+        for (std::vector<UShort_t>::iterator it = data->pulse.begin() ; it != data->pulse.end(); ++it){
+            if (itcnt<N_MAX_WF_LENGTH){
+                hwf2d[ch]->Fill(itcnt,*it);
+                hwf1d[ch]->SetBinContent(itcnt+1,*it);
+            }
+            itcnt++;
+        }
+    }else{
+        cout<<"ERROR! @.@"<<endl;
+    }
+}
+
+void CloseMe(){
+
+}
+
+//!------------**********************
+//! //!------------**********************
+//! //!------------**********************
+//! //!------------**********************
+
+#include <stdint.h>
+
+int CFD_delay=1;//in Tclk unit, 1 Tclk=2ns
+double CFD_fraction=0.5;
+double LED_threshold=100;
+int gateOffset=10;
+int shortGate=20;
+int longGate=150;
+int nBaseline=16;
+int minVarBaseline=100; //criteria for baseline determination
+int mode_selection=0;
+
+
+//! dont care about the following code
+uint16_t seperateint(int inint,bool islsb){
+  if (islsb) return (uint16_t) (inint&0xFFFF);
+  else return (uint16_t) (inint>>16);
+}
+
+NIGIRIHit* data;
+
+
+int init_done = 0;
+int n_rtclock;
+int n_v1730;
+int pinit()
+{
+  if (init_done) return 1;
+  init_done = 1;
+  gROOT->ProcessLine(".L libDataStruct.so");
+  data = new NIGIRIHit;
+  Init();
+
+  n_rtclock=0;
+  n_v1730=0;
+  return 0;
+}
+
+int process_event (Event * e)
+{
+
+
+    //! v1740 packet
+    Packet *p1730=e->getPacket(V1730_PACKET);
+    if (p1730)
+    {
+        //usleep(1000000);
+        n_v1730++;
+//        /cout<<"n_v1730 = "<<n_v1730<<endl;
+        int* temp;
+        int* gg;
+        gg=(int*) p1730->getIntArray(temp);
+        int size=p1730->getPadding();
+        //! content
+        int k=V1730_HDR+V1730_MAX_N_CH;        
+        for (int i=0;i<V1730_N_CH;i++){
+            //! header
+            data->Clear();
+            data->evt_type = V1730_EVENT_TYPE;
+            data->b = 0;//for sorter
+            data->evt = gg[2]+1;//this event start from 0
+            data->overrange = (Char_t) gg[1];//intepret as channel(group) mask
+            UInt_t tslsb = (UInt_t)gg[5];
+            UInt_t tsmsb = (UInt_t)gg[4];
+            data->ts = (((ULong64_t)tsmsb<<32)&0xFFFF00000000)|(ULong64_t)tslsb;//resolution is 16 ns!
+            data->ch = i;//for sorter
+
+            int nsample = gg[i+V1730_HDR];
+            data->nsample = nsample;
+            UShort_t WaveLine[nsample];
+
+            int ispl = 0;
+            for (int j=0;j<nsample/2+nsample%2;j++){
+                if (ispl<nsample) {
+                    WaveLine[ispl]=gg[k]&0xFFFF;
+                    data->pulse.push_back(gg[k]&0xFFFF);
+
+                }
+                ispl++;
+                if (ispl<nsample) {
+                    WaveLine[ispl]=(gg[k]>>16)&0xFFFF;
+                    data->pulse.push_back((gg[k]>>16)&0xFFFF);
+                }
+                ispl++;
+                k++;
+            }
+
+            if (nsample>NSBL){
+                dpp *oj=new dpp(nsample,WaveLine);
+                oj->baselineMean(nBaseline,minVarBaseline);
+                double timeData = 0;
+                int cShort,cLong;
+
+                if (mode_selection==0) {
+                    timeData=oj->led(LED_threshold);
+                }else if (mode_selection==1) {
+                    timeData=oj->ledWithCorr(LED_threshold);
+                }else if (mode_selection==2){
+                    oj->makeCFD(LED_threshold,CFD_delay,CFD_fraction);
+                    timeData=oj->cfdFast();
+                }else if (mode_selection==3){
+                    oj->makeCFD(LED_threshold,CFD_delay,CFD_fraction);
+                    timeData=oj->cfdSlow();
+                }
+                oj->chargeInter(cShort,cLong,timeData,gateOffset,shortGate,longGate);
+                data->cshort = cShort;
+                data->clong = cLong;
+                //data->cshort = 0;
+                //data->clong = oj->maxAdcPos(N_MAX_WF_LENGTH)-oj->bL;
+                //data->clong = oj->bL-oj->minAdcNeg(N_MAX_WF_LENGTH);
+                data->baseline = oj->bL;
+                data->finets = timeData;
+                delete oj;
+            }
+            ProcessEvent(data);
+        }
+        delete p1730;
+    }
+    return 0;
+}
+
+int pclose(){
+    CloseMe();
+    cout<<"Finish!"<<endl;
+    return 0;
+}
+

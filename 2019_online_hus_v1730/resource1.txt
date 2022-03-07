@@ -1,0 +1,4 @@
+.L libmyanalysis.so
+gSystem->Load("libpmonitor")
+rcdaqopen()
+pstart()

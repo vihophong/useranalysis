@@ -1,0 +1,97 @@
+#Hist Config
+# TH1 name
+TH1 wf1730_1d_0
+TH1 wf1730_1d_1
+TH1 wf1730_1d_2
+TH1 wf1730_1d_3
+TH1 wf1730_1d_4
+TH1 wf1730_1d_5
+TH1 wf1730_1d_6
+TH1 wf1730_1d_7
+TH1 hts1730_1d_0
+TH1 hts1730_1d_1
+TH1 hts1730_1d_2
+TH1 hts1730_1d_3
+TH1 hts1730_1d_4
+TH1 hts1730_1d_5
+TH1 hts1730_1d_6
+TH1 hts1730_1d_7
+TH1 hrate
+TH1 hratetmp
+TH1 ht0_t2
+TH1 hratetmpscale
+
+# TH2 name
+TH2 wf1730_2d_0
+TH2 wf1730_2d_1
+TH2 wf1730_2d_2
+TH2 wf1730_2d_3
+TH2 wf1730_2d_4
+TH2 wf1730_2d_5
+TH2 wf1730_2d_6
+TH2 wf1730_2d_7
+TH2 psd_2d_0
+TH2 psd_2d_1
+TH2 psd_2d_2
+TH2 psd_2d_3
+TH2 psd_2d_4
+TH2 psd_2d_5
+TH2 psd_2d_6
+TH2 psd_2d_7
+TH2 t2d
+TH2 e2d
+
+
+
+# Default histogram in canvas 1
+# CANVAS1 name
+CANVAS1 wf1730_2d_0
+CANVAS1 wf1730_1d_0
+CANVAS1 wf1730_2d_2
+CANVAS1 wf1730_1d_2
+# Default histogram in canvas 2
+CANVAS2 hrate
+CANVAS2 e2d
+
+# Name in list box
+LISTBOX e2d
+LISTBOX t2d
+LISTBOX hrate
+LISTBOX ht0_t2
+LISTBOX wf1730_1d_0
+LISTBOX wf1730_1d_1
+LISTBOX wf1730_1d_2
+LISTBOX wf1730_1d_3
+LISTBOX wf1730_1d_4
+LISTBOX wf1730_1d_5
+LISTBOX wf1730_1d_6
+LISTBOX wf1730_1d_7
+LISTBOX wf1730_2d_0
+LISTBOX wf1730_2d_1
+LISTBOX wf1730_2d_2
+LISTBOX wf1730_2d_3
+LISTBOX wf1730_2d_4
+LISTBOX wf1730_2d_5
+LISTBOX wf1730_2d_6
+LISTBOX wf1730_2d_7
+LISTBOX psd_2d_0
+LISTBOX psd_2d_1
+LISTBOX psd_2d_2
+LISTBOX psd_2d_3
+LISTBOX psd_2d_4
+LISTBOX psd_2d_5
+LISTBOX psd_2d_6
+LISTBOX psd_2d_7
+LISTBOX hts1730_1d_0
+LISTBOX hts1730_1d_1
+LISTBOX hts1730_1d_2
+LISTBOX hts1730_1d_3
+LISTBOX hts1730_1d_4
+LISTBOX hts1730_1d_5
+LISTBOX hts1730_1d_6
+LISTBOX hts1730_1d_7
+
+# Rate meter histogram name (must be one of the TH1 name)
+RATE hrate
+RATECAL hratetmp
+RATECALTOSCALE hratetmpscale
